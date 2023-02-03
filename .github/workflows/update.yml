@@ -3,7 +3,7 @@ name: generate-json
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 23 * * *"
+    - cron: "0 21 29,30,26,27,15 * *"
 
 jobs:
   build:
