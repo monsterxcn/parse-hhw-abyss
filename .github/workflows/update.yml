@@ -13,7 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          token: ${{ github.token }}
+          token: ${{ secrets.ACCESS_TOKEN || github.token }}
 
       - name: Cache
         uses: actions/cache@v3
