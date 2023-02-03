@@ -28,7 +28,7 @@ jobs:
 
       - name: Build
         env:
-          HHW_LANG: "CHS"
+          HHW_LANG: ${{ secrets.HHW_LANG }}
         run: yarn test
 
       - name: Upload
