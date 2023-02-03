@@ -1,0 +1,53 @@
+name: generate-json
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 23 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          token: ${{ github.token }}
+
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: cache
+          key: gc-cache-v3-${{ github.run_id }}
+          restore-keys: |
+            gc-cache-v3-
+
+      - name: Install
+        run: yarn install --production --frozen-lockfile
+
+      - name: Build
+        run: yarn test
+        env:
+          hhw_lang: CHS
+
+      - name: Upload
+        uses: tvrcgo/upload-to-oss@master
+        with:
+          key-id: ${{ secrets.OSS_KEY_ID }}
+          key-secret: ${{ secrets.OSS_KEY_SECRET }}
+          region: oss-cn-shanghai
+          bucket: monsterx
+          assets: |
+            abyss.beautify.json:/bot/abyss.beautify.json
+            abyss.json:/bot/abyss.json
+
+      - name: Commit
+        uses: EndBug/add-and-commit@main
+        with:
+          author_name: github-actions[bot]
+          author_email: github-actions[bot]@users.noreply.github.com
+          message: ':wrench: 更新深渊数据'
+          add: |
+            'abyss.beautify.json'
+            'abyss.json'

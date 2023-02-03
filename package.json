@@ -1,0 +1,27 @@
+{
+  "name": "parse-hhw-abyss",
+  "version": "1.0.0",
+  "description": "Tool for parsing genshin honey hunter abyss data using cheerio",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/monsterxcn/parse-hhw-abyss.git"
+  },
+  "keywords": [
+    "genshin",
+    "abyss"
+  ],
+  "author": "monsterxcn",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/monsterxcn/parse-hhw-abyss/issues"
+  },
+  "homepage": "https://github.com/monsterxcn/parse-hhw-abyss#readme",
+  "dependencies": {
+    "axios": "^1.3.1",
+    "cheerio": "1.0.0-rc.12"
+  }
+}
