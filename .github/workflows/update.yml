@@ -27,9 +27,9 @@ jobs:
         run: yarn install --production --frozen-lockfile
 
       - name: Build
-        run: yarn test
         env:
-          hhw_lang: CHS
+          HHW_LANG: "CHS"
+        run: yarn test
 
       - name: Upload
         uses: tvrcgo/upload-to-oss@master

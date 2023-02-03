@@ -6,12 +6,12 @@ const BASEURL = "https://genshin.honeyhunterworld.com"
 const HHW_LANG = process.env.HHW_LANG
 const data = { "Floor": {}, "Schedule": {} }
 
-fetchData(HHW_LANG ? HHW_LANG : 'EN')
+fetchData()
 
-function fetchData(lang) {
+function fetchData() {
     // 请求 Genshin Honey Hunter World
     axios.get(new URL('/d_1001/', BASEURL), {
-        params: { lang: lang },
+        params: { lang: HHW_LANG ? HHW_LANG : 'EN' },
         timeout: 60000,
         headers: {
             "accept": "text/html",
@@ -78,7 +78,7 @@ function extractData(htmlStr) {
             }
             if (key === "Unlock") {
                 // 渊星总数，提取为 number
-                value = /⭐x(\d*)/gm.exec(_value.text()) * 1
+                value = /⭐x(\d*)/gm.exec(_value.text())[1] * 1
             } else if (key === "Disorders") {
                 // 地脉异常，替换 <br> 标签
                 value = _value.html().split('<br><br>')
@@ -106,8 +106,8 @@ function extractData(htmlStr) {
                     value[needStarCount] = _reward
                 })
             } else {
-                // 其余数据正常写入
-                value = _value.text()
+                // 其余数据先尝试转为 number 再写入
+                value = (_value.text() * 1) ? (_value.text() * 1): _value.text()
             }
             // 写入层通用数据的一对键值
             vData[key] = value
@@ -186,7 +186,7 @@ function extractData(htmlStr) {
                     })
                 } else {
                     key = _key
-                    value = _value.text()
+                    value = (_value.text() * 1) ? (_value.text() * 1): _value.text()
                 }
                 // 写入间数据的一对键值
                 cData[key] = value
