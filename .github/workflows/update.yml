@@ -10,26 +10,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           token: ${{ secrets.ACCESS_TOKEN || github.token }}
 
-      - name: Cache
-        uses: actions/cache@v3
+      - uses: pnpm/action-setup@v2
         with:
-          path: cache
-          key: gc-cache-v3-${{ github.run_id }}
-          restore-keys: |
-            gc-cache-v3-
+          version: 6.32.9
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'pnpm'
 
       - name: Install
-        run: yarn install --production --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Build
         env:
           HHW_LANG: ${{ secrets.HHW_LANG }}
-        run: yarn test
+        run: pnpm test
 
       - name: Upload
         uses: tvrcgo/upload-to-oss@master
