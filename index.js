@@ -15,7 +15,6 @@ function fetchData() {
         timeout: 60000,
         headers: {
             "accept": "text/html",
-            "accept-language": "zh-CN,zh;q=0.9",
             "user-agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Mobile Safari/537.36"
         },
         // proxy: {
@@ -238,6 +237,6 @@ function extractData(htmlStr) {
     })
 
     // 生成 JSON 文件
-    fs.writeFileSync('abyss.beautify.json', JSON.stringify(data, null, 2));
-    fs.writeFileSync('abyss.json', JSON.stringify(data, null));
+    fs.writeFileSync('assets/abyss.beautify.json', JSON.stringify(data, null, 2));
+    fs.writeFileSync('assets/abyss.json', JSON.stringify(data, null));
 }
