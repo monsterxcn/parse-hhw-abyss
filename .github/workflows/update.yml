@@ -3,12 +3,22 @@ name: generate-json
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 21 29,30,26,27,15 * *"
+    - cron: "0 21 15,26-27,29-30 * *"
 
 jobs:
+
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      cndate: ${{ steps.valid.outputs.cndate }}
+    steps:
+      - id: valid
+        run: echo "cndate=$(TZ='Asia/Shanghai' date +%F)" >> $GITHUB_OUTPUT
+
   build:
     runs-on: ubuntu-latest
-
+    needs: check
+    if: github.event_name != 'schedule' || endsWith(needs.check.outputs.cndate, '01') || endsWith(needs.check.outputs.cndate, '16')
     steps:
       - uses: actions/checkout@v3
         with:
@@ -39,15 +49,12 @@ jobs:
           region: oss-cn-shanghai
           bucket: monsterx
           assets: |
-            abyss.beautify.json:/bot/abyss.beautify.json
-            abyss.json:/bot/abyss.json
+            assets/*.json:/bot/
 
       - name: Commit
         uses: EndBug/add-and-commit@main
         with:
           author_name: github-actions[bot]
           author_email: github-actions[bot]@users.noreply.github.com
-          message: ':wrench: 更新深渊数据'
-          add: |
-            'abyss.beautify.json'
-            'abyss.json'
+          message: ':wrench: update spiral abyss data'
+          add: 'assets/*.json'
