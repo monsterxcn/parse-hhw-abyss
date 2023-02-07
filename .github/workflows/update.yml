@@ -13,7 +13,9 @@ jobs:
       cndate: ${{ steps.valid.outputs.cndate }}
     steps:
       - id: valid
-        run: echo "cndate=$(TZ='Asia/Shanghai' date +%F)" >> $GITHUB_OUTPUT
+        run: |
+          date +"%F %T" && TZ='Asia/Shanghai' date +"%F %T" # for debug
+          echo "cndate=$(TZ='Asia/Shanghai' date +%F)" >> $GITHUB_OUTPUT
 
   build:
     runs-on: ubuntu-latest
@@ -50,11 +52,12 @@ jobs:
           bucket: monsterx
           assets: |
             assets/*.json:/bot/
+            assets/*.json:/bot/gsabyss/
 
       - name: Commit
         uses: EndBug/add-and-commit@main
         with:
           author_name: github-actions[bot]
           author_email: github-actions[bot]@users.noreply.github.com
-          message: ':wrench: update spiral abyss data'
+          message: ':bento: update spiral abyss data'
           add: 'assets/*.json'
