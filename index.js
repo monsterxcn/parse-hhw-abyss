@@ -83,13 +83,13 @@ function extractData(htmlStr) {
                 value = _value.html().split('<br><br>')
             } else if (key === "Reward") {
                 // 星之秘宝，解析嵌套表格
-                value = {}
+                value = []
                 const rewardRows = _value.children('table').children('tbody').children('tr')
                 console.assert(rewardRows.length === 3)
                 rewardRows.map(function () {
                     const starText = $(this).children('td').eq(0).text()
                     const rewardLoaded = $(this).children('td').eq(-1)
-                    const needStarCount = /⭐x(\d*)/gm.exec(starText)[1]
+                    // const needStarCount = /⭐x(\d*)/gm.exec(starText)[1]
                     const _reward = []
                     rewardLoaded.children('a').map(function () {
                         const iconDivLoaded = $(this).children('div')
@@ -102,7 +102,7 @@ function extractData(htmlStr) {
                             'Count': $(this).text() * 1,
                         })
                     })
-                    value[needStarCount] = _reward
+                    value.push(_reward)
                 })
             } else {
                 // 其余数据先尝试转为 number 再写入
@@ -132,7 +132,7 @@ function extractData(htmlStr) {
                 } else if (_key.startsWith('PossibleBuff')) {
                     // 深秘祝福，解析嵌套表格
                     key = "PossibleBuff"
-                    const innerKey = /PossibleBuff(\d)/gm.exec(_key)[1]
+                    // const innerKey = /PossibleBuff(\d)/gm.exec(_key)[1]
                     const innerValue = []
                     const buffRows = _value.children('table').children('tbody').children('tr')
                     buffRows.map(function () {
@@ -147,8 +147,8 @@ function extractData(htmlStr) {
                             'Time': regMatched[2],
                         })
                     })
-                    cData[key] = cData[key] ? cData[key] : {}
-                    cData[key][innerKey] = innerValue
+                    cData[key] = cData[key] ? cData[key] : []
+                    cData[key].push(innerValue)
                     return
                 } else if (_key.startsWith('Monsters')) {
                     // 讨伐列表，解析嵌套表格
