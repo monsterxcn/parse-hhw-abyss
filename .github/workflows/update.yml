@@ -13,6 +13,7 @@ jobs:
       cndate: ${{ steps.valid.outputs.cndate }}
     steps:
       - id: valid
+        name: Get date
         run: |
           date +"%F %T" && TZ='Asia/Shanghai' date +"%F %T" # for debug
           echo "cndate=$(TZ='Asia/Shanghai' date +%F)" >> $GITHUB_OUTPUT
@@ -51,8 +52,10 @@ jobs:
           region: oss-cn-shanghai
           bucket: monsterx
           assets: |
-            assets/*.json:/bot/
-            assets/*.json:/bot/gsabyss/
+            assets/abyss.json:/bot/abyss.json
+            assets/abyss.json:/bot/gsabyss/abyss.json
+            assets/abyss.beautify.json:/bot/abyss.beautify.json
+            assets/abyss.beautify.json:/bot/gsabyss/abyss.beautify.json
 
       - name: Commit
         uses: EndBug/add-and-commit@main
