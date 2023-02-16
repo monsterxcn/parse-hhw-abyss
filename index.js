@@ -5,29 +5,49 @@ const fs = require('fs');
 const BASEURL = "https://genshin.honeyhunterworld.com"
 const HHW_LANG = process.env.HHW_LANG
 const data = { "Floor": {}, "Schedule": {} }
+const HEADERS = {
+    params: { lang: HHW_LANG ? HHW_LANG : 'EN' },
+    timeout: 60000,
+    headers: {
+        "accept": "text/html",
+        "user-agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Mobile Safari/537.36"
+    },
+    // proxy: {
+    //     protocol: 'http',
+    //     host: '127.0.0.1',
+    //     port: 7890,
+    // }
+}
 
 fetchData()
 
 function fetchData() {
     // 请求 Genshin Honey Hunter World
-    axios.get(new URL('/d_1001/', BASEURL), {
-        params: { lang: HHW_LANG ? HHW_LANG : 'EN' },
-        timeout: 60000,
-        headers: {
-            "accept": "text/html",
-            "user-agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Mobile Safari/537.36"
-        },
-        // proxy: {
-        //     protocol: 'http',
-        //     host: '127.0.0.1',
-        //     port: 7890,
-        // }
-    }).then((resp) => {
-        extractData(resp.data)
+    axios.get(new URL('/d_1001/', BASEURL), HEADERS).then((resp) => {
+        latestLiveUrl = latestLive(resp.data)
+        axios.get(latestLiveUrl, HEADERS).then((resp) => {
+            extractData(resp.data)
+        }).catch((err) => {
+            console.error("解析深渊数据出错")
+            console.error(err)
+            process.exit(1)
+        })
     }).catch((err) => {
+        console.error("解析 Last Live 链接出错")
         console.error(err)
         process.exit(1)
     })
+}
+
+function latestLive(htmlStr) {
+    const $ = cheerio.load(htmlStr)
+    const options = $('div.version_select > select.version_selector > option')
+
+    const latestLiveParams = options.filter(function () {
+        return $(this).text() === "Latest Live"
+    }).attr("value")
+
+    return new URL('/d_1001/' + latestLiveParams, BASEURL)
 }
 
 function extractData(htmlStr) {
