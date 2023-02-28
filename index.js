@@ -1,10 +1,10 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
+const moment = require('moment');
 const fs = require('fs');
 
 const BASEURL = "https://genshin.honeyhunterworld.com"
 const HHW_LANG = process.env.HHW_LANG
-const data = { "Floor": {}, "Schedule": {} }
 const HEADERS = {
     params: { lang: HHW_LANG ? HHW_LANG : 'EN' },
     timeout: 60000,
@@ -23,23 +23,61 @@ fetchData()
 
 function fetchData() {
     // 请求 Genshin Honey Hunter World
-    axios.get(new URL('/d_1001/', BASEURL), HEADERS).then((resp) => {
-        latestLiveUrl = latestLive(resp.data)
-        axios.get(latestLiveUrl, HEADERS).then((resp) => {
-            extractData(resp.data)
+    axios.get(new URL('/d_1001/', BASEURL), HEADERS).then((betaResp) => {
+        const latestLiveUrl = getLatestLive(betaResp.data)
+        axios.get(latestLiveUrl, HEADERS).then((liveResp) => {
+            extractData(liveResp.data, "Latest Live")
         }).catch((err) => {
-            console.error("解析深渊数据出错")
+            console.error("解析 Last Live 深渊数据出错")
+            console.error(err)
+            process.exit(1)
+        }).then(() => {
+            bestResult()
+        }).catch((err) => {
+            console.error("处理最优深渊数据出错")
             console.error(err)
             process.exit(1)
         })
     }).catch((err) => {
-        console.error("解析 Last Live 链接出错")
+        console.error("解析 Last Beta 深渊数据出错")
         console.error(err)
         process.exit(1)
     })
 }
 
-function latestLive(htmlStr) {
+function bestResult() {
+    // 判断 Last Beta 深渊数据的所有时间节点是否全部正确
+    // Last Beta 深渊数据存在异常的时间节点则使用 Last Live 深渊数据
+    const betaContent = fs.readFileSync("assets/abyss.beta.json", 'utf-8')
+    const liveContent = fs.readFileSync("assets/abyss.live.json", 'utf-8')
+    const betaData = JSON.parse(betaContent)
+    const LiveData = JSON.parse(liveContent)
+
+    const betaDateKeys = Object.keys(betaData.Schedule).reverse()
+    const timeFormat = 'YYYY-MM-DD HH:mm:ss'
+    let startTime = moment('2020-07-16 04:00:00', timeFormat);
+    const isValid = betaDateKeys.every((key, i) => {
+        if (i === 0) {
+            return key === "2020-07-01 00:00:00"
+        }
+        const thisTime = startTime.format(timeFormat)
+        if (startTime.date() === 1) {
+            // 当前 key 为某月 1 日，将 startTime 向后推迟 15 天到当月 16 日
+            startTime = startTime.add(15, 'days')
+        } else {
+            // 当前 key 为某月 16 日，将 startTime 向后推迟直到下月 1 日
+            startTime = startTime.endOf('month').add(1, 'days').set('hour', 4).set('minute', 0).set('second', 0)
+        }
+        return key === thisTime
+    })
+    result = isValid ? betaData : LiveData
+    fs.writeFileSync('assets/abyss.json', JSON.stringify(result));
+    fs.writeFileSync('assets/abyss.beautify.json', JSON.stringify(result, null, 2));
+}
+
+function getLatestLive(htmlStr) {
+    extractData(htmlStr, "Latest Beta")
+
     const $ = cheerio.load(htmlStr)
     const options = $('div.version_select > select.version_selector > option')
 
@@ -50,7 +88,9 @@ function latestLive(htmlStr) {
     return new URL('/d_1001/' + latestLiveParams, BASEURL)
 }
 
-function extractData(htmlStr) {
+function extractData(htmlStr, pageType) {
+    console.log(`===============\n  ${pageType}  \n===============`)
+    const data = { "Floor": {}, "Schedule": {} }
     const $ = cheerio.load(htmlStr)
 
     const floors = $('#abyss_floors > div > div > section')
@@ -126,7 +166,7 @@ function extractData(htmlStr) {
                 })
             } else {
                 // 其余数据先尝试转为 number 再写入
-                value = (_value.text() * 1) ? (_value.text() * 1): _value.text()
+                value = (_value.text() * 1) ? (_value.text() * 1) : _value.text()
             }
             // 写入层通用数据的一对键值
             vData[key] = value
@@ -205,7 +245,7 @@ function extractData(htmlStr) {
                     })
                 } else {
                     key = _key
-                    value = (_value.text() * 1) ? (_value.text() * 1): _value.text()
+                    value = (_value.text() * 1) ? (_value.text() * 1) : _value.text()
                 }
                 // 写入间数据的一对键值
                 cData[key] = value
@@ -257,6 +297,8 @@ function extractData(htmlStr) {
     })
 
     // 生成 JSON 文件
-    fs.writeFileSync('assets/abyss.beautify.json', JSON.stringify(data, null, 2));
-    fs.writeFileSync('assets/abyss.json', JSON.stringify(data, null));
+    data["Type"] = pageType
+    fileName = `abyss.${pageType.split(" ")[1].toLowerCase()}.json`
+    // fs.writeFileSync('assets/abyss.beautify.json', JSON.stringify(data, null, 2));
+    fs.writeFileSync(`assets/${fileName}`, JSON.stringify(data, null));
 }
