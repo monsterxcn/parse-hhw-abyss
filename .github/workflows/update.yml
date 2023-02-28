@@ -3,7 +3,7 @@ name: generate-json
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 21 15,26-27,29-30 * *"
+    - cron: "15 20 7,15,22,26-27,29-30 * *"
 
 jobs:
 
@@ -21,7 +21,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: check
-    if: github.event_name != 'schedule' || endsWith(needs.check.outputs.cndate, '01') || endsWith(needs.check.outputs.cndate, '16')
+    if: github.event_name != 'schedule' || endsWith(needs.check.outputs.cndate, '01') || endsWith(needs.check.outputs.cndate, '08') || endsWith(needs.check.outputs.cndate, '16') || endsWith(needs.check.outputs.cndate, '23')
     steps:
       - uses: actions/checkout@v3
         with:
@@ -53,9 +53,10 @@ jobs:
           bucket: monsterx
           assets: |
             assets/abyss.json:/bot/abyss.json
-            assets/abyss.json:/bot/gsabyss/abyss.json
+            assets/abyss.live.json:/bot/abyss.live.json
+            assets/abyss.beta.json:/bot/abyss.beta.json
             assets/abyss.beautify.json:/bot/abyss.beautify.json
-            assets/abyss.beautify.json:/bot/gsabyss/abyss.beautify.json
+            assets/abyss.json:/bot/gsabyss/abyss.json
 
       - name: Commit
         uses: EndBug/add-and-commit@main
